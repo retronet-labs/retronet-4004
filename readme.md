@@ -40,6 +40,7 @@ Istruzioni implementate:
 * XCH
 * INC
 * ADD
+* SUB
 
 ---
 

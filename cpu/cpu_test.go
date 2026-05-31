@@ -195,7 +195,9 @@ func TestSUB(t *testing.T) {
 	c := NewCPU4004()
 	c.A = 7
 	c.R[R2] = 3
-	c.Execute(SUB(R2))
+	if err := c.Execute(SUB(R2)); err != nil {
+		t.Fatal(err)
+	}
 	if c.A != 4 {
 		t.Errorf("A = %d, want 4", c.A)
 	}
@@ -210,7 +212,9 @@ func TestSUBWithBorrow(t *testing.T) {
 	c := NewCPU4004()
 	c.A = 3
 	c.R[R2] = 7
-	c.Execute(SUB(R2))
+	if err := c.Execute(SUB(R2)); err != nil {
+		t.Fatal(err)
+	}
 	if c.A != 12 {
 		t.Errorf("A = %d, want 12", c.A)
 	} // 3 - 7 = -4 → nibble(12)
