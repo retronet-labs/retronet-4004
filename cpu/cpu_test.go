@@ -283,3 +283,18 @@ func TestDACUnderflow(t *testing.T) {
 		t.Error("C = false, want true")
 	}
 }
+
+// TestCMA verifica che l'istruzione CMA completi correttamente l'accumulatore (A) invertendo tutti i suoi bit	e che non modifichi il carry (C)
+func TestCMA(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 0b0101 // 5
+	if err := c.Execute(CMA()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0b1010 { // 10
+		t.Errorf("A = %d, want 10", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false (CMA does not affect carry)")
+	}
+}

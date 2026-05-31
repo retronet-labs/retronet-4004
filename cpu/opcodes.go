@@ -37,4 +37,5 @@ const (
 	OP_SUB = 0x90
 	OP_IAC = 0x02
 	OP_DAC = 0x08
+	OP_CMA = 0x04
 )

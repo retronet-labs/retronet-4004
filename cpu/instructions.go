@@ -84,6 +84,10 @@ func (c *CPU4004) Execute(op byte) error {
 		c.A = nibble(result)
 		c.C = result < 16
 
+	// CMA: Complement Accumulator, inverte tutti i bit dell'accumulatore (A)
+	case op == OP_CMA:
+		c.A = nibble(^c.A)
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}

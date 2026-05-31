@@ -8,10 +8,15 @@ import (
 func main() {
 	c := cpu.NewCPU4004()
 
+	// 30 + 18 = 48
+	// Le cifre sono memorizzate in registri separati (BCD: una cifra per nibble)
+	// 30 → R0=3 (decine), R1=0 (unità)
+	// 18 → R2=1 (decine), R3=8 (unità)
+
 	program := []byte{
-		cpu.LDM(1), // A = 1
-		cpu.DAC(),  // A = 0, carry = false
-		cpu.DAC(),  // A = 15, carry = true (underflow)
+		cpu.LDM(5), // A = 5  (0101)
+		cpu.CMA(),  // A = 10 (1010)
+		cpu.IAC(),  // A = 11 — complemento a due di 5: -5 in nibble
 	}
 
 	fmt.Println("=== BEFORE ===")
