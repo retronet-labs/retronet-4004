@@ -50,6 +50,7 @@ Istruzioni implementate:
 * CMC
 * RAL
 * RAR
+* TCC
 
 ---
 
@@ -299,6 +300,7 @@ CPU minima:
 * CMC
 * RAL
 * RAR
+* TCC
 
 
 * test LDM

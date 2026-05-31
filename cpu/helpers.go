@@ -32,3 +32,5 @@ func CMC() byte { return OP_CMC }
 func RAL() byte { return OP_RAL }
 
 func RAR() byte { return OP_RAR }
+
+func TCC() byte { return OP_TCC }

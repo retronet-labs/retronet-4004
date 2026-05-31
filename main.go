@@ -8,12 +8,14 @@ import (
 func main() {
 	c := cpu.NewCPU4004()
 
-	// moltiplica 3 per 2 usando RAL (shift left = *2)
+	// salva il carry di un'addizione in R0
 	program := []byte{
-		cpu.LDM(3), // A = 0011 (3)
-		cpu.CLC(),  // C = false
-		cpu.RAL(),  // A = 0110 (6), C = false
-		cpu.RAL(),  // A = 1100 (12), C = false
+		cpu.LDM(0xF),    // A = 15
+		cpu.XCH(cpu.R0), // R0 = 15
+		cpu.LDM(0xF),    // A = 15
+		cpu.ADD(cpu.R0), // A = 14, C = true (overflow)
+		cpu.TCC(),       // A = 1 (carry salvato), C = false
+		cpu.XCH(cpu.R1), // R1 = 1 (overflow memorizzato)
 	}
 
 	fmt.Println("=== BEFORE ===")

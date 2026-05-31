@@ -44,4 +44,5 @@ const (
 	OP_CMC = 0xF3
 	OP_RAL = 0xF5
 	OP_RAR = 0xF6
+	OP_TCC = 0xF7
 )

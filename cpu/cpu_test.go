@@ -453,3 +453,33 @@ func TestRARCarryOut(t *testing.T) {
 		t.Error("C = false, want true")
 	}
 }
+
+func TestTCCWithCarrySet(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 9
+	c.C = true
+	if err := c.Execute(TCC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 1 {
+		t.Errorf("A = %d, want 1", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+func TestTCCWithCarryClear(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 9
+	c.C = false
+	if err := c.Execute(TCC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0 {
+		t.Errorf("A = %d, want 0", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}

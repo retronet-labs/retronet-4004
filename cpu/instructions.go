@@ -131,6 +131,15 @@ func (c *CPU4004) Execute(op byte) error {
 		c.A = (c.A >> 1) | (oldCarry << 3)
 		c.C = newCarry
 
+	// TCC: Transfer Carry to Accumulator and Clear, carica 1 in A se il carry (C) è true, altrimenti carica 0 in A, e azzera il carry (C)
+	case op == OP_TCC:
+		if c.C {
+			c.A = 1
+		} else {
+			c.A = 0
+		}
+		c.C = false
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}
