@@ -20,3 +20,7 @@ func IAC() byte { return OP_IAC }
 func DAC() byte { return OP_DAC }
 
 func CMA() byte { return OP_CMA }
+
+func CLB() byte { return OP_CLB }
+
+func CLC() byte { return OP_CLC }

@@ -88,6 +88,15 @@ func (c *CPU4004) Execute(op byte) error {
 	case op == OP_CMA:
 		c.A = nibble(^c.A)
 
+	// CLB: Clear Accumulator and Borrow, azzera l'accumulatore (A) e il carry (C)
+	case op == OP_CLB:
+		c.A = 0
+		c.C = false
+
+	// CLC: Clear Carry, azzera solo il carry (C) lasciando intatto l'accumulatore (A)
+	case op == OP_CLC:
+		c.C = false
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}

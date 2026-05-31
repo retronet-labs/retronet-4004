@@ -44,6 +44,8 @@ Istruzioni implementate:
 * IAC
 * DAC
 * CMA
+* CLB
+* CLC
 
 ---
 
@@ -287,6 +289,8 @@ CPU minima:
 * IAC
 * DAC
 * CMA
+* CLB
+* CLC
 
 
 * test LDM

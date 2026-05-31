@@ -38,4 +38,6 @@ const (
 	OP_IAC = 0xF2
 	OP_DAC = 0xF8
 	OP_CMA = 0xF4
+	OP_CLB = 0xF0
+	OP_CLC = 0xF1
 )

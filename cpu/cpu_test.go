@@ -298,3 +298,35 @@ func TestCMA(t *testing.T) {
 		t.Error("C = true, want false (CMA does not affect carry)")
 	}
 }
+
+// TestCLB verifica che l'istruzione CLB azzeri correttamente sia l'accumulatore (A) che il carry (C)
+func TestCLB(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 9
+	c.C = true
+	if err := c.Execute(CLB()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0 {
+		t.Errorf("A = %d, want 0", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+// TestCLC verifica che l'istruzione CLC azzeri correttamente solo il carry (C) lasciando intatto l'accumulatore (A)
+func TestCLC(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 7
+	c.C = true
+	if err := c.Execute(CLC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 7 {
+		t.Errorf("A = %d, want 7 (unchanged)", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}

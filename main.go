@@ -14,9 +14,13 @@ func main() {
 	// 18 → R2=1 (decine), R3=8 (unità)
 
 	program := []byte{
-		cpu.LDM(5), // A = 5  (0101)
-		cpu.CMA(),  // A = 10 (1010)
-		cpu.IAC(),  // A = 11 — complemento a due di 5: -5 in nibble
+		cpu.LDM(0xF),    // A = 15
+		cpu.XCH(cpu.R0), // R0 = 15
+		cpu.LDM(0xF),    // A = 15
+		cpu.ADD(cpu.R0), // A = 14, C = true (overflow)
+		cpu.CLC(),       // C = false
+		cpu.LDM(1),      // A = 1
+		cpu.ADD(cpu.R0), // A = 1 + 15 + 0 = 0, carry = true (senza CLC sarebbe stato 1)
 	}
 
 	fmt.Println("=== BEFORE ===")
