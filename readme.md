@@ -51,6 +51,7 @@ Istruzioni implementate:
 * RAL
 * RAR
 * TCC
+* TCS
 
 ---
 
@@ -301,6 +302,7 @@ CPU minima:
 * RAL
 * RAR
 * TCC
+* TCS
 
 
 * test LDM

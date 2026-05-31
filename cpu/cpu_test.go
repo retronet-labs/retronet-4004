@@ -483,3 +483,33 @@ func TestTCCWithCarryClear(t *testing.T) {
 		t.Error("C = true, want false")
 	}
 }
+
+func TestTCSWithCarrySet(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 0
+	c.C = true
+	if err := c.Execute(TCS()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 10 {
+		t.Errorf("A = %d, want 10", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+func TestTCSWithCarryClear(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 0
+	c.C = false
+	if err := c.Execute(TCS()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 9 {
+		t.Errorf("A = %d, want 9", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}

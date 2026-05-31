@@ -8,14 +8,15 @@ import (
 func main() {
 	c := cpu.NewCPU4004()
 
-	// salva il carry di un'addizione in R0
+	// TCS: valore di correzione BCD per la sottrazione
 	program := []byte{
-		cpu.LDM(0xF),    // A = 15
-		cpu.XCH(cpu.R0), // R0 = 15
-		cpu.LDM(0xF),    // A = 15
-		cpu.ADD(cpu.R0), // A = 14, C = true (overflow)
-		cpu.TCC(),       // A = 1 (carry salvato), C = false
-		cpu.XCH(cpu.R1), // R1 = 1 (overflow memorizzato)
+		cpu.STC(),       // forza C = true (simula un borrow)
+		cpu.TCS(),       // A = 10, C = false
+		cpu.XCH(cpu.R0), // salva 10 in R0
+
+		cpu.CLC(),       // C = false (nessun borrow)
+		cpu.TCS(),       // A = 9, C = false
+		cpu.XCH(cpu.R1), // salva 9 in R1
 	}
 
 	fmt.Println("=== BEFORE ===")

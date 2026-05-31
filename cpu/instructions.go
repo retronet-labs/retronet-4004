@@ -140,6 +140,15 @@ func (c *CPU4004) Execute(op byte) error {
 		}
 		c.C = false
 
+	// TCS: Transfer Carry to Accumulator and Set, carica 10 in A se il carry (C) è true, altrimenti carica 9 in A, e azzera il carry (C)
+	case op == OP_TCS:
+		if c.C {
+			c.A = 10
+		} else {
+			c.A = 9
+		}
+		c.C = false
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}
