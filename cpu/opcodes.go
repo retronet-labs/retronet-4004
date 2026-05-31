@@ -35,4 +35,5 @@ const (
 	OP_XCH = 0xB0
 	OP_LDM = 0xD0
 	OP_SUB = 0x90
+	OP_IAC = 0x02
 )

@@ -41,6 +41,7 @@ Istruzioni implementate:
 * INC
 * ADD
 * SUB
+* IAC
 
 ---
 
@@ -281,6 +282,7 @@ CPU minima:
 * INC
 * ADD
 * SUB
+* IAC
 
 
 * test LDM
@@ -292,6 +294,8 @@ CPU minima:
 * test NOP
 * test SUB
 * test SUB con borrow
+* test IAC
+* test IAC con overflow
 
 ## Step futuri
 

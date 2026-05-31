@@ -222,3 +222,34 @@ func TestSUBWithBorrow(t *testing.T) {
 		t.Errorf("C = false, want true")
 	}
 }
+
+// TestIAC verifica che l'istruzione IAC incrementi correttamente l'accumulatore (A) di 1 e aggiorni il carry (C) se necessario
+func TestIAC(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 5
+	if err := c.Execute(IAC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 6 {
+		t.Errorf("A = %d, want 6", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+// TestIACOverflow verifica che l'istruzione IAC gestisca correttamente l'overflow quando l'accumulatore (A) è a 0x0F (15) e viene incrementato
+// Ad esempio, se A = 0x0F (15), dopo IAC, A dovrebbe tornare a 0x00 (0) e C dovrebbe essere true, poiché c'è un overflow
+func TestIACOverflow(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 0x0F
+	if err := c.Execute(IAC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0 {
+		t.Errorf("A = %d, want 0", c.A)
+	}
+	if !c.C {
+		t.Error("C = false, want true")
+	}
+}

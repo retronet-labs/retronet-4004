@@ -71,6 +71,12 @@ func (c *CPU4004) Execute(op byte) error {
 		c.A = nibble(sum)
 		c.C = sum < 16
 
+	// IAC: Increment Accumulator, incrementa l'accumulatore (A) di 1 considerando il carry
+	case op == OP_IAC:
+		result := c.A + 1
+		c.A = nibble(result)
+		c.C = result > 0x0F
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}

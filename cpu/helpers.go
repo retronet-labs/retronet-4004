@@ -14,3 +14,5 @@ func ADD(r byte) byte { return OP_ADD | nibble(r) }
 func LD(r byte) byte { return OP_LD | nibble(r) }
 
 func SUB(r byte) byte { return OP_SUB | nibble(r) }
+
+func IAC() byte { return OP_IAC }

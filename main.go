@@ -9,12 +9,9 @@ func main() {
 	c := cpu.NewCPU4004()
 
 	program := []byte{
-		cpu.LDM(9),      // A = 9
-		cpu.XCH(cpu.R1), // R1 = 9, A = 0
-		cpu.LDM(5),      // A = 5
-		cpu.XCH(cpu.R2), // R2 = 5, A = 0
-		cpu.LD(cpu.R1),  // A = 9
-		cpu.SUB(cpu.R2), // A = 9 - 5 = 4
+		cpu.LDM(14), // A = 14
+		cpu.IAC(),   // A = 15
+		cpu.IAC(),   // A = 0, carry = true
 	}
 
 	fmt.Println("=== BEFORE ===")
