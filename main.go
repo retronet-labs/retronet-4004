@@ -8,11 +8,6 @@ import (
 func main() {
 	c := cpu.NewCPU4004()
 
-	// 30 + 18 = 48
-	// Le cifre sono memorizzate in registri separati (BCD: una cifra per nibble)
-	// 30 → R0=3 (decine), R1=0 (unità)
-	// 18 → R2=1 (decine), R3=8 (unità)
-
 	// moltiplica 3 per 2 usando RAL (shift left = *2)
 	program := []byte{
 		cpu.LDM(3), // A = 0011 (3)
