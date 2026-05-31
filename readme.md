@@ -46,7 +46,8 @@ Istruzioni implementate:
 * CMA
 * CLB
 * CLC
-
+* STC
+* CMC
 ---
 
 # Obiettivo architetturale
@@ -291,6 +292,8 @@ CPU minima:
 * CMA
 * CLB
 * CLC
+* STC
+* CMC
 
 
 * test LDM

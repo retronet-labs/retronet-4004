@@ -97,6 +97,14 @@ func (c *CPU4004) Execute(op byte) error {
 	case op == OP_CLC:
 		c.C = false
 
+	// STC: Set Carry, imposta il carry (C) a true senza modificare l'accumulatore (A)
+	case op == OP_STC:
+		c.C = true
+
+	// CMC: Complement Carry, inverte lo stato del carry (C) senza modificare l'accumulatore (A)
+	case op == OP_CMC:
+		c.C = !c.C
+
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)
 	}

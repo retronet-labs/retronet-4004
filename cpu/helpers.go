@@ -24,3 +24,7 @@ func CMA() byte { return OP_CMA }
 func CLB() byte { return OP_CLB }
 
 func CLC() byte { return OP_CLC }
+
+func STC() byte { return OP_STC }
+
+func CMC() byte { return OP_CMC }

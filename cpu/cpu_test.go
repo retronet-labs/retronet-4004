@@ -330,3 +330,39 @@ func TestCLC(t *testing.T) {
 		t.Error("C = true, want false")
 	}
 }
+
+// TestSTC verifica che l'istruzione STC imposti correttamente il carry (C) a true senza modificare l'accumulatore (A)
+func TestSTC(t *testing.T) {
+	c := NewCPU4004()
+	c.C = false
+	if err := c.Execute(STC()); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true")
+	}
+}
+
+// TestCMC verifica che l'istruzione CMC completi correttamente il carry (C) invertendo il suo stato e che non modifichi l'accumulatore (A)
+func TestCMCSetToFalse(t *testing.T) {
+	c := NewCPU4004()
+	c.C = true
+	if err := c.Execute(CMC()); err != nil {
+		t.Fatal(err)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+// TestCMCSetToTrue verifica che l'istruzione CMC completi correttamente il carry (C) invertendo il suo stato e che non modifichi l'accumulatore (A)
+func TestCMCSetToTrue(t *testing.T) {
+	c := NewCPU4004()
+	c.C = false
+	if err := c.Execute(CMC()); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true")
+	}
+}

@@ -40,4 +40,6 @@ const (
 	OP_CMA = 0xF4
 	OP_CLB = 0xF0
 	OP_CLC = 0xF1
+	OP_STC = 0xFA
+	OP_CMC = 0xF3
 )
