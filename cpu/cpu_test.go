@@ -558,3 +558,34 @@ func TestDAAWithCarry(t *testing.T) {
 		t.Error("C = false, want true")
 	}
 }
+
+func TestRARCarryIn(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 0b0100 // 4
+	c.C = true
+	if err := c.Execute(RAR()); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0b1010 { // old carry (1) → bit 3, A>>1 = 0b0010
+		t.Errorf("A = %04b, want 1010", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}
+
+func TestSUBWithInitialBorrow(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 5
+	c.R[R2] = 3
+	c.C = true // borrow iniziale
+	if err := c.Execute(SUB(R2)); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 1 { // 5 - 3 - 1 = 1
+		t.Errorf("A = %d, want 1", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false")
+	}
+}

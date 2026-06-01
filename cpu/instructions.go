@@ -21,39 +21,29 @@ func (c *CPU4004) Execute(op byte) error {
 	// L'istruzione LD Rn: carica il valore del registro specificato (R0-R15) nell'accumulatore (A)
 	// Ad esempio, se R0 = 0x05, dopo LD R0, A sarà 0x05
 	case op&0xF0 == OP_LD:
-		n := low
-		c.A = nibble(c.R[n])
+		c.A = nibble(c.R[low])
 
 	case op&0xF0 == OP_XCH:
 		// XCH R0-R15: scambia il valore dell'accumulatore (A) con quello del registro specificato (R0-R15)
 		// Ad esempio, se A = 0x02 e R0 = 0x00, dopo XCH R0, A sarà 0x00 e R0 sarà 0x02
-		n := low
-		c.A, c.R[n] = c.R[n], c.A
+		c.A, c.R[low] = c.R[low], c.A
 
 	case op&0xF0 == OP_INC:
 		// INC R0-R15: incrementa il valore del registro specificato (R0-R15) di 1
 		// Ad esempio, se R0 = 0x0F (15), dopo INC R0, R0 sarà 0x00 (0) e non ci sarà carry, poiché i registri sono a 4 bit
-		n := low
-
 		// Incrementa il registro specificato e assicura che rimanga a 4 bit
-		c.R[n] = nibble(c.R[n] + 1)
+		c.R[low] = nibble(c.R[low] + 1)
 
 	case op&0xF0 == OP_ADD:
 		// ADD R0-R15: aggiunge il valore del registro specificato (R0-R15) all'accumulatore (A) e al carry
 		// Ad esempio, se A = 0x03, R0 = 0x02 e C = false, dopo ADD R0, A sarà 0x05 e C sarà false
 		// Se A = 0x0F, R0 = 0x01 e C = true, dopo ADD R0, A sarà 0x01 (0 + 1 + 1) e C sarà true (carry)
-		n := low
-
-		// Calcola il risultato dell'addizione considerando il carry
-		// Il carry viene trattato come 1 se è true, altrimenti 0
-		// Questo è importante per simulare correttamente il comportamento del 4004, dove il carry influisce sull'addizione
-		// Ad esempio, se A = 0x0F, R0 = 0x01 e C = true, il risultato sarà 0x11 (17), ma poiché A è a 4 bit, diventa 0x01 con carry = true
 		carry := uint8(0)
 		if c.C {
 			carry = 1
 		}
 
-		result := c.A + c.R[n] + carry
+		result := c.A + c.R[low] + carry
 		c.A = nibble(result)
 
 		// Il carry è true se il risultato dell'addizione supera 0x0F (15), altrimenti è false
@@ -62,12 +52,11 @@ func (c *CPU4004) Execute(op byte) error {
 	// SUB R0-R15: sottrae il valore del registro specificato (R0-R15) dall'accumulatore (A) considerando il borrow (carry)
 	// La formula 16 + A - Rr - borrow evita underflow su uint8. Se il risultato è < 16, significa che senza il "prestito del 16" sarebbe stato negativo → borrow avvenuto → C=1.
 	case op&0xF0 == OP_SUB:
-		n := low
 		borrow := uint8(0)
 		if c.C {
 			borrow = 1
 		}
-		sum := uint8(16) + c.A - c.R[n] - borrow
+		sum := uint8(16) + c.A - c.R[low] - borrow
 		c.A = nibble(sum)
 		c.C = sum < 16
 
@@ -118,9 +107,7 @@ func (c *CPU4004) Execute(op byte) error {
 		c.A = nibble(c.A<<1) | oldCarry
 		c.C = newCarry
 
-	// RAR: Rotate Accumulator Right, ruota i bit dell'accumulatore (A) a destra e sposta il bit più significativo nel carry (C)
-	// Ad esempio, se A = 0b1011 (11) e C = false, dopo RAR, A sarà 0b1101 (13) e C sarà false (il bit più significativo 1 è stato spostato nel carry)
-	// Se A = 0b1011 (11) e C = true, dopo RAR, A sarà 0b1101 (13) e C sarà true (il bit più significativo 1 è stato spostato nel carry e il vecchio carry true è stato spostato in A)
+	// RAR: Rotate Accumulator Right, ruota i bit dell'accumulatore (A) a destra e sposta bit meno significativo (bit 0) nel carry (C)
 	case op == OP_RAR:
 		newCarry := c.A&0x01 != 0
 		oldCarry := uint8(0)
