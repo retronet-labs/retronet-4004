@@ -7,6 +7,7 @@ type CPU4004 struct {
 	C  bool      // Carry flag
 	R  [16]uint8 // 16 registri da 4 bit
 	PC uint16    // Program Counter, 12 bit
+	CL uint8     // Command Line — banco RAM attivo (0-7), impostato da DCL
 }
 
 // NewCPU4004 crea una nuova istanza del CPU4004 con valori iniziali

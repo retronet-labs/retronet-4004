@@ -574,6 +574,33 @@ func TestRARCarryIn(t *testing.T) {
 	}
 }
 
+// TestDCL verifica che DCL copi correttamente A nel registro CL senza modificare A o il carry
+func TestDCL(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 3
+	if err := c.Execute(DCL()); err != nil {
+		t.Fatal(err)
+	}
+	if c.CL != 3 {
+		t.Errorf("CL = %d, want 3", c.CL)
+	}
+	if c.A != 3 {
+		t.Errorf("A = %d, want 3 (unchanged)", c.A)
+	}
+}
+
+func TestDCLDoesNotAffectCarry(t *testing.T) {
+	c := NewCPU4004()
+	c.A = 2
+	c.C = true
+	if err := c.Execute(DCL()); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true (DCL should not affect carry)")
+	}
+}
+
 // TestKBP verifica la conversione one-hot per tutti i casi validi e non validi
 func TestKBP(t *testing.T) {
 	tests := []struct {

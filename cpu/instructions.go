@@ -146,6 +146,12 @@ func (c *CPU4004) Execute(op byte) error {
 			c.C = true
 		}
 
+	// DCL: Designate Command Line, copia il valore di A nel registro CL per selezionare il banco RAM attivo.
+	// Usato prima delle istruzioni RAM (WRM, RDM, ecc.) per indicare quale banco di chip Intel 4002 risponde.
+	// Non modifica A né il carry.
+	case op == OP_DCL:
+		c.CL = c.A
+
 	// KBP: Keyboard Process, converte un valore one-hot dell'accumulatore nel numero di posizione del bit attivo.
 	// Usato per decodificare la colonna attiva durante la scansione della tastiera a matrice.
 	// Se A ha più di un bit a 1 (input non valido), imposta A = 0xF (errore).

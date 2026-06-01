@@ -8,20 +8,13 @@ import (
 func main() {
 	c := cpu.NewCPU4004()
 
-	// KBP: decodifica tasti da one-hot a posizione
-	// Simula la lettura di tre colonne di tastiera
+	// DCL: seleziona il banco RAM attivo tramite il registro CL
+	// Seleziona banco RAM 2, poi torna al banco 0
 	program := []byte{
-		cpu.LDM(0b0001), // A = colonna 1 premuta (one-hot)
-		cpu.KBP(),       // A = 1
-		cpu.XCH(cpu.R0), // salva in R0
-
-		cpu.LDM(0b0100), // A = colonna 3 premuta (one-hot)
-		cpu.KBP(),       // A = 3
-		cpu.XCH(cpu.R1), // salva in R1
-
-		cpu.LDM(0b0110), // A = due colonne (input non valido)
-		cpu.KBP(),       // A = 0xF (errore)
-		cpu.XCH(cpu.R2), // salva in R2
+		cpu.LDM(2), // A = 2
+		cpu.DCL(),  // CL = 2 — banco RAM 2 attivo
+		cpu.LDM(0), // A = 0
+		cpu.DCL(),  // CL = 0 — banco RAM 0 attivo
 	}
 
 	fmt.Println("=== BEFORE ===")
