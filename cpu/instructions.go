@@ -2,10 +2,74 @@ package cpu
 
 import "fmt"
 
-// Execute esegue un'istruzione data dal byte opcode
-// Il metodo interpreta l'opcode e aggiorna lo stato del CPU di conseguenza
-// Supporta un sottoinsieme di istruzioni del 4004, come LDM, XCH, INC e ADD
-// Se viene passato un opcode non implementato, restituisce un errore
+// executeWithArg esegue le istruzioni a 2 byte del 4004.
+// op è il primo byte (opcode + nibble), arg è il secondo byte già letto dalla ROM.
+func (c *CPU4004) executeWithArg(op, arg byte) error {
+	high := op & 0x0F // nibble alto dell'indirizzo o numero di registro
+
+	switch op & 0xF0 {
+
+	// JUN a: salta incondizionatamente all'indirizzo a 12 bit.
+	// Primo byte: 0x4n (n = bit 11-8 dell'indirizzo)
+	// Secondo byte: AB (bit 7-0 dell'indirizzo)
+	// Indirizzo finale: n<<8 | AB
+	case OP_JUN:
+		c.PC = (uint16(high) << 8) | uint16(arg)
+
+	// JMS a: salta a subroutine all'indirizzo a 12 bit.
+	// Salva il PC corrente sullo stack prima del salto.
+	// Il PC a questo punto punta già all'istruzione successiva (post-fetch dei 2 byte).
+	case OP_JMS:
+		c.push(c.PC)
+		c.PC = (uint16(high) << 8) | uint16(arg)
+
+	// JCN c,a: salta se la condizione c è vera, a è il byte basso dell'indirizzo nella stessa pagina (0xPAB dove P=PC[11:8]).
+	// Condizione codificata in 4 bit (nibble basso del primo byte):
+	//   bit 3 (C4): inverte l'intera condizione (NOT)
+	//   bit 2 (C3): salta se A == 0
+	//   bit 1 (C2): salta se carry == 1
+	//   bit 0 (C1): salta se TEST == 0 (TEST pin non emulato, trattato come 1 → condizione sempre falsa)
+	case OP_JCN:
+		cond := high
+		taken := false
+		if cond&0x04 != 0 && c.A == 0 {
+			taken = true
+		}
+		if cond&0x02 != 0 && c.C {
+			taken = true
+		}
+		// C1 (TEST pin) non emulato: considerato sempre HIGH → condizione C1 mai vera
+		if cond&0x08 != 0 {
+			taken = !taken // C4: NOT della condizione
+		}
+		if taken {
+			// L'indirizzo di salto condivide i 4 bit alti con il PC corrente (stessa pagina)
+			c.PC = (c.PC & 0x0F00) | uint16(arg)
+		}
+
+	// ISZ Rr,a: incrementa il registro Rr; se il risultato è 0, salta a 'a' (stesso meccanismo di JCN).
+	case OP_ISZ:
+		c.R[high] = nibble(c.R[high] + 1)
+		if c.R[high] != 0 {
+			c.PC = (c.PC & 0x0F00) | uint16(arg)
+		}
+
+	// FIM Rr,d: carica il byte immediato 'd' nella coppia di registri Rr/Rr+1.
+	// Rr riceve il nibble alto di d, Rr+1 riceve il nibble basso.
+	// 'high' è sempre pari (bit 0 del nibble = 0, bit 0 distingue FIM da SRC).
+	case OP_FIM:
+		c.R[high] = arg >> 4
+		c.R[high+1] = arg & 0x0F
+
+	default:
+		return fmt.Errorf("executeWithArg: opcode non implementato: 0x%02X arg=0x%02X", op, arg)
+	}
+
+	return nil
+}
+
+// Execute esegue un'istruzione a singolo byte dato l'opcode.
+// Le istruzioni a 2 byte usano executeWithArg (chiamato da Step).
 func (c *CPU4004) Execute(op byte) error {
 	low := op & 0x0F
 
@@ -178,6 +242,26 @@ func (c *CPU4004) Execute(op byte) error {
 	case op&0xF0 == OP_BBL:
 		c.A = nibble(low)
 		c.PC = c.pop()
+
+	// SRC Rr: send register control — imposta l'indirizzo del registro RAM per le operazioni I/O.
+	// Il byte SRC è formato da Rr (nibble alto = chip/banco RAM) e Rr+1 (nibble basso = registro).
+	// Memorizzato in SRCAddr; verrà letto dalle istruzioni del gruppo 0xEX (WRM, RDM...) in Step 7.
+	// Bit 0 del nibble basso dell'opcode è sempre 1 (distingue SRC da FIM a 2 byte).
+	case op&0xF1 == OP_SRC:
+		rp := low &^ 1 // forza Rr pari
+		c.SRCAddr = (c.R[rp] << 4) | c.R[rp+1]
+
+	// FIN Rr: fetch indirect da ROM — richiede accesso alla ROM, non supportato da Execute.
+	// Usare Step() che gestisce FIN direttamente con accesso alla ROM.
+	case op&0xF1 == OP_FIN:
+		return fmt.Errorf("FIN richiede accesso alla ROM: usare Step()")
+
+	// JIN Rr: jump indirect — salta all'indirizzo formato da Rr (nibble alto) e Rr+1 (nibble basso),
+	// nella stessa pagina del PC corrente (bit 11-8 invariati).
+	case op&0xF1 == OP_JIN:
+		rp := low &^ 1
+		addr := (uint16(c.R[rp]) << 4) | uint16(c.R[rp+1])
+		c.PC = (c.PC & 0x0F00) | addr
 
 	default:
 		return fmt.Errorf("opcode non implementato: 0x%02X", op)

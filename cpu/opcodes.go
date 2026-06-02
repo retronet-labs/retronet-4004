@@ -32,7 +32,7 @@ const (
 	OP_SUB = 0x90 // SUB Rr — sottrae registro da A con borrow
 	OP_LD  = 0xA0 // LD Rr  — carica registro in A
 	OP_XCH = 0xB0 // XCH Rr — scambia A con registro
-    OP_BBL = 0xC0 // FIXME: da implementare (richiede stack)
+	OP_BBL = 0xC0 // BBL n  — branch back and load (ritorno da subroutine)
 	OP_LDM = 0xD0 // LDM n  — carica immediato in A
 )
 
@@ -54,6 +54,20 @@ const (
 	OP_DAA = 0xFB // Decimal Adjust     — corregge A per BCD dopo ADD
 	OP_KBP = 0xFC // Keyboard Process   — decodifica one-hot in posizione
 	OP_DCL = 0xFD // Designate CL       — CL=A, seleziona banco RAM
+)
+
+// Gruppo salti e indirizzamento (0x1X–0x7X)
+// Istruzioni a 2 byte: il primo byte contiene opcode + nibble, il secondo l'indirizzo/dato.
+// Decodifica: op & 0xF0 == OP_XXX
+const (
+	OP_JCN = 0x10 // JCN c,a  — jump condizionale (c=condizione, a=indirizzo basso)
+	OP_FIM = 0x20 // FIM Rr,d — fetch immediate in register pair (d=dato)
+	OP_SRC = 0x21 // SRC Rr   — send register control (1 byte, ma same high byte as FIM)
+	OP_FIN = 0x30 // FIN Rr   — fetch indirect da ROM via R0R1
+	OP_JIN = 0x31 // JIN Rr   — jump indirect via registro pair
+	OP_JUN = 0x40 // JUN a    — jump unconditional (a=indirizzo 12 bit)
+	OP_JMS = 0x50 // JMS a    — jump to subroutine (push PC, poi salta)
+	OP_ISZ = 0x70 // ISZ Rr,a — increment register, skip if zero
 )
 
 // Gruppo I/O e RAM (0xEX)

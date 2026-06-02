@@ -23,3 +23,13 @@ func DAA() byte       { return OP_DAA }
 func KBP() byte       { return OP_KBP }
 func DCL() byte       { return OP_DCL }
 func BBL(v byte) byte { return OP_BBL | nibble(v) }
+
+// Istruzioni di salto — restituiscono il primo byte; il secondo byte (indirizzo/dato) va aggiunto separatamente nella ROM.
+func JUN(addrHigh byte) byte { return OP_JUN | (addrHigh & 0x0F) }
+func JMS(addrHigh byte) byte { return OP_JMS | (addrHigh & 0x0F) }
+func JCN(cond byte) byte     { return OP_JCN | (cond & 0x0F) }
+func ISZ(r byte) byte        { return OP_ISZ | nibble(r) }
+func FIM(rp byte) byte       { return OP_FIM | (nibble(rp) &^ 1) } // rp pari: coppia Rr/Rr+1
+func SRC(rp byte) byte       { return OP_SRC | (nibble(rp) &^ 1) }
+func FIN(rp byte) byte       { return OP_FIN | (nibble(rp) &^ 1) }
+func JIN(rp byte) byte       { return OP_JIN | (nibble(rp) &^ 1) }

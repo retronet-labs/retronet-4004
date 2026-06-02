@@ -18,6 +18,12 @@ type CPU4004 struct {
 	// Il 4° push sovrascrive il primo slot (comportamento ciclico, nessun errore).
 	Stack [3]uint16 // indirizzi di ritorno salvati da JMS, ripristinati da BBL
 	SP    uint8     // stack pointer — conta i livelli occupati (0 = stack vuoto)
+
+	// SRCAddr è l'indirizzo RAM/ROM selezionato dall'istruzione SRC.
+	// Il nibble alto (bit 7-4) identifica il chip/banco RAM; il nibble basso
+	// (bit 3-0) identifica il registro all'interno del chip.
+	// Usato dalle istruzioni I/O del gruppo 0xEX (WRM, RDM, ecc.) — Step 7.
+	SRCAddr uint8
 }
 
 // NewCPU4004 crea una nuova istanza del CPU4004 con valori iniziali
@@ -40,10 +46,37 @@ func nibble(v uint8) uint8 {
 // Step esegue un singolo ciclo fetch-execute:
 // legge l'opcode dalla ROM all'indirizzo PC, incrementa PC, esegue l'istruzione.
 // PC è mascherato a 12 bit (range 0x000–0xFFF) come sul 4004 reale.
+// Le istruzioni a 2 byte (JCN, FIM, JUN, JMS, ISZ) leggono un secondo byte prima di eseguire.
 func (c *CPU4004) Step(rom *ROM) error {
 	op := rom.Data[c.PC]
 	c.PC = (c.PC + 1) & 0x0FFF
-	return c.Execute(op)
+
+	switch op & 0xF0 {
+	case OP_JCN, OP_JUN, OP_JMS, OP_ISZ:
+		arg := rom.Data[c.PC]
+		c.PC = (c.PC + 1) & 0x0FFF
+		return c.executeWithArg(op, arg)
+	case OP_FIM & 0xF0: // 0x20: FIM (bit 0 = 0, 2 byte) o SRC (bit 0 = 1, 1 byte)
+		if op&0x01 == 0 {
+			arg := rom.Data[c.PC]
+			c.PC = (c.PC + 1) & 0x0FFF
+			return c.executeWithArg(op, arg)
+		}
+		return c.Execute(op) // SRC: 1 byte
+	case OP_FIN & 0xF0: // 0x30: FIN (bit 0 = 0) o JIN (bit 0 = 1)
+		if op&0x01 == 0 {
+			// FIN Rr: fetch indirect da ROM usando R0:R1 come indirizzo (nella pagina corrente)
+			rp := op & 0x0E // primo registro della coppia (sempre pari)
+			addr := (c.PC & 0x0F00) | (uint16(c.R[0]) << 4) | uint16(c.R[1])
+			data := rom.Data[addr]
+			c.R[rp] = data >> 4
+			c.R[rp+1] = data & 0x0F
+			return nil
+		}
+		return c.Execute(op) // JIN: 1 byte, gestito in Execute
+	default:
+		return c.Execute(op)
+	}
 }
 
 // Push è la versione esportata di push, usata da main e dai test di integrazione
