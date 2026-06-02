@@ -156,8 +156,8 @@ cpu.XCH(cpu.R4),  // salva cifra decine in R4
 Per la sottrazione BCD esiste un meccanismo analogo che usa l'istruzione **TCS** (Transfer Carry Subtract).
 
 Dopo una SUB, TCS carica in A il valore di correzione corretto:
-- `A = 10` se c'è stato borrow (C=true) — la cifra ha "preso in prestito" 10 dalla cifra successiva
-- `A = 9`  se non c'è stato borrow (C=false)
+- `A = 10` se non c'è stato borrow (C=true)
+- `A = 9`  se c'è stato borrow (C=false) — la cifra ha "preso in prestito" 10 dalla cifra successiva
 
 Questo valore viene poi usato nel passo di correzione della cifra successiva.
 

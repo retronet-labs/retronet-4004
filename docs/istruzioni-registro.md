@@ -314,16 +314,22 @@ con ADD, poi i nibble alti con ADD (che include automaticamente il carry del pas
 
 ## SUB — Subtract Register from Accumulator
 
-**Cosa fa:** sottrae il valore del registro Rr e il borrow (C) da A.
-Il "borrow" è il carry usato al contrario: se C è true significa che c'era un prestito dal calcolo precedente.
+**Cosa fa:** sottrae il valore del registro Rr da A usando il carry/link come input.
+Nel 4004, durante le sottrazioni, `C = true` significa **nessun borrow precedente**;
+`C = false` significa che c'era un borrow precedente.
 
-**Formula:** `A = A - Rr - C`  (poi tronca a 4 bit, e aggiorna C)
+**Formula Intel:** `A = A + ~Rr + C`  (poi tronca a 4 bit, e aggiorna C)
+
+Equivalente:
+- se `C = true`: `A = A - Rr`
+- se `C = false`: `A = A - Rr - 1`
 
 **Regola del carry/borrow in SUB:**
-- Dopo SUB, se il risultato era negativo (serviva un "prestito"), C = **true**
-- Se il risultato era positivo o zero, C = **false**
+- Dopo SUB, se c'è stato borrow, C = **false**
+- Se non c'è stato borrow, C = **true**
 
-Questa convenzione è l'opposto di ADD, ed è quella usata dal 4004 reale.
+Questa è la convenzione usata dal 4004 reale: il carry/link resta alto quando
+la sottrazione non ha avuto bisogno di un prestito.
 
 **Opcode:** `0x9r` dove `r` è il numero del registro (0–F)
 
@@ -339,20 +345,20 @@ Questa convenzione è l'opposto di ADD, ed è quella usata dal 4004 reale.
 ```
 A = 7  (0111)
 R2 = 3 (0011)
-C = false
+C = true
 
 SUB R2:
   0111  (7)
 - 0011  (3)
 ──────
-  0100  (4)   →   A = 4, C = false  (nessun prestito)
+  0100  (4)   →   A = 4, C = true  (nessun prestito)
 ```
 
 **Esempio con borrow out (risultato negativo):**
 ```
 A = 3  (0011)
 R2 = 7 (0111)
-C = false
+C = true
 
 SUB R2:
   3 - 7 = -4
@@ -361,25 +367,25 @@ Il 4004 tratta i 4 bit come un ciclo, quindi -4 diventa 12 (16 - 4 = 12):
   0011  (3)
 - 0111  (7)
 ──────
-  1100  (12)   →   A = 12, C = true  (c'è stato un prestito)
+  1100  (12)   →   A = 12, C = false  (c'è stato un prestito)
 ```
 
 **Esempio con borrow in:**
 ```
 A = 5
 R2 = 3
-C = true  ← borrow dal calcolo precedente
+C = false  ← borrow dal calcolo precedente
 
 SUB R2:
-  5 - 3 - 1 = 1   →   A = 1, C = false
+  5 - 3 - 1 = 1   →   A = 1, C = true
 ```
 
 **Effetti:**
 
 | Registro | Cambia? | Valore |
 |----------|---------|--------|
-| A        | ✅ sì   | (A - Rr - C + 16) mod 16 |
-| C        | ✅ sì   | true se c'era borrow, false altrimenti |
+| A        | ✅ sì   | A + ~Rr + C (mod 16) |
+| C        | ✅ sì   | true se non c'è borrow, false se c'è borrow |
 | Rr       | ❌ no   | invariato |
 
 ---
@@ -458,5 +464,5 @@ Opcode BBL 5:
 | XCH Rr     | `0xBr`  | A ↔ Rr              | C               |
 | INC Rr     | `0x6r`  | Rr = Rr + 1 (mod 16)| A, C            |
 | ADD Rr     | `0x8r`  | A = A+Rr+C, aggiorna C | Rr            |
-| SUB Rr     | `0x9r`  | A = A-Rr-C, aggiorna C | Rr            |
+| SUB Rr     | `0x9r`  | A = A+~Rr+C, aggiorna C | Rr            |
 | BBL n      | `0xCn`  | A = n, PC←stack     | C               |

@@ -137,8 +137,8 @@ A = 15, C = false  →  IAC  →  A = 0,  C = true   ← overflow
 
 ## DAC — Decrement Accumulator
 
-**Cosa fa:** sottrae 1 da A. Se A vale 0 (`0000`) va a 15 (`1111`) e C diventa true
-(segnala un "borrow" — ha dovuto "prendere a prestito").
+**Cosa fa:** sottrae 1 da A. Se A vale 0 (`0000`) va a 15 (`1111`) e C diventa false
+(segnala un "borrow" — ha dovuto "prendere a prestito"). Se non c'è borrow, C diventa true.
 
 **Opcode:** `0xF8` = `1111 1000`
 
@@ -146,9 +146,9 @@ A = 15, C = false  →  IAC  →  A = 0,  C = true   ← overflow
 
 **Esempi:**
 ```
-A = 5  →  DAC  →  A = 4,  C = false
-A = 1  →  DAC  →  A = 0,  C = false
-A = 0  →  DAC  →  A = 15, C = true   ← underflow/borrow
+A = 5  →  DAC  →  A = 4,  C = true
+A = 1  →  DAC  →  A = 0,  C = true
+A = 0  →  DAC  →  A = 15, C = false   ← underflow/borrow
 ```
 
 **In binario (caso underflow):**
@@ -157,7 +157,7 @@ A = 0  →  DAC  →  A = 15, C = true   ← underflow/borrow
 - 0001  (1)
 ──────
 Il 4004 risolve così: 16 + 0 - 1 = 15
-  1111  (15)   →   A = 15, C = true
+  1111  (15)   →   A = 15, C = false
 ```
 
 **Quando si usa:** contatori che devono decrementare, calcoli BCD.
@@ -343,8 +343,9 @@ C = false  →  TCS  →  A =  9, C = false
 ```
 
 **Perché 9 e 10?** TCS viene usato nella correzione BCD delle sottrazioni.
-In BCD si lavora in base 10 — quando c'è un borrow, bisogna correggere il risultato
-aggiungendo 10 (se C era true) o 9 (se C era false). Vedere `docs/bcd.md` per dettagli.
+In BCD si lavora in base 10. Dopo una sottrazione, il 4004 usa C alto per indicare
+che non c'è stato borrow: TCS carica 10 se C era true, 9 se C era false.
+Vedere `docs/bcd.md` per dettagli.
 
 ---
 
