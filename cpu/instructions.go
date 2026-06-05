@@ -286,12 +286,20 @@ func (c *CPU4004) executeIO(op byte, ram *RAM) error {
 		return fmt.Errorf("istruzione I/O 0x%02X: RAM non inizializzata", op)
 	}
 
-	_ = c.CL & 0x3             // banco   (usato dalle istruzioni)
-	_ = (c.SRCAddr >> 4) & 0x3 // registro (usato dalle istruzioni)
-	_ = int(c.SRCAddr & 0x0F)  // carattere (usato dalle istruzioni)
+	banco := c.CL & 0x3
+	reg := (c.SRCAddr >> 4) & 0x3
+	char := int(c.SRCAddr & 0x0F)
 
 	switch op {
+
+	// WRM: scrive A nella cella RAM selezionata da DCL (banco) e SRC (registro + carattere).
+	// Non modifica A né il carry.
+	case OP_WRM:
+		ram.Data[banco][reg][char] = nibble(c.A)
+
 	default:
 		return fmt.Errorf("istruzione I/O non implementata: 0x%02X", op)
 	}
+
+	return nil
 }

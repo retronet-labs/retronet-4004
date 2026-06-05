@@ -1096,3 +1096,60 @@ func TestJINPreservesPage(t *testing.T) {
 		t.Errorf("PC = 0x%03X, want 0x248", c.PC)
 	}
 }
+
+// --- WRM ---
+
+func TestWRM(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	// banco 0 (CL=0, default), registro 0, carattere 3
+	c.SRCAddr = 0x03 // reg=0, char=3
+	c.A = 7
+
+	rom.Data[0x000] = WRM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if ram.Data[0][0][3] != 7 {
+		t.Errorf("ram.Data[0][0][3] = %d, want 7", ram.Data[0][0][3])
+	}
+	if c.A != 7 {
+		t.Errorf("A = %d, want 7 (WRM should not modify A)", c.A)
+	}
+}
+
+func TestWRMMasksToNibble(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.SRCAddr = 0x00
+	c.A = 0x0F
+	rom.Data[0x000] = WRM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if ram.Data[0][0][0] != 0x0F {
+		t.Errorf("ram.Data[0][0][0] = %X, want F", ram.Data[0][0][0])
+	}
+}
+
+func TestWRMSelectsBank(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.CL = 2         // banco 2 (impostato da DCL in un programma reale)
+	c.SRCAddr = 0x15 // registro 1, carattere 5
+	c.A = 9
+
+	rom.Data[0x000] = WRM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if ram.Data[2][1][5] != 9 {
+		t.Errorf("ram.Data[2][1][5] = %d, want 9", ram.Data[2][1][5])
+	}
+}

@@ -33,3 +33,6 @@ func FIM(rp byte) byte       { return OP_FIM | (nibble(rp) &^ 1) } // rp pari: c
 func SRC(rp byte) byte       { return OP_SRC | (nibble(rp) &^ 1) }
 func FIN(rp byte) byte       { return OP_FIN | (nibble(rp) &^ 1) }
 func JIN(rp byte) byte       { return OP_JIN | (nibble(rp) &^ 1) }
+
+// istruzioni per la ram
+func WRM() byte { return OP_WRM }
