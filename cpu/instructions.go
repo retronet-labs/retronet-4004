@@ -296,6 +296,10 @@ func (c *CPU4004) executeIO(op byte, ram *RAM) error {
 	// Non modifica A né il carry.
 	case OP_WRM:
 		ram.Data[banco][reg][char] = nibble(c.A)
+	// RDM: legge la cella RAM selezionata (banco/registro/carattere) nell'accumulatore.
+	// Non modifica il carry.
+	case OP_RDM:
+		c.A = nibble(ram.Data[banco][reg][char])
 
 	default:
 		return fmt.Errorf("istruzione I/O non implementata: 0x%02X", op)

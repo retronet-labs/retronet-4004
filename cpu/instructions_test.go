@@ -1153,3 +1153,61 @@ func TestWRMSelectsBank(t *testing.T) {
 		t.Errorf("ram.Data[2][1][5] = %d, want 9", ram.Data[2][1][5])
 	}
 }
+
+// --- RDM ---
+
+func TestRDM(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Data[0][0][4] = 9 // precarica il valore in RAM
+	c.SRCAddr = 0x04      // registro 0, carattere 4
+	c.A = 0               // A inizia a 0
+
+	rom.Data[0x000] = RDM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 9 {
+		t.Errorf("A = %d, want 9", c.A)
+	}
+}
+
+func TestRDMDoesNotAffectCarry(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Data[0][0][0] = 3
+	c.C = true
+	rom.Data[0x000] = RDM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true (RDM should not affect carry)")
+	}
+}
+
+func TestWRMRDMRoundtrip(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.SRCAddr = 0x02 // registro 0, carattere 2
+	c.A = 5
+
+	rom.Data[0x000] = WRM()  // scrivi 5 in RAM
+	rom.Data[0x001] = LDM(0) // azzera A
+	rom.Data[0x002] = RDM()  // rileggi da RAM
+
+	for i := 0; i < 3; i++ {
+		if err := c.Step(rom, ram); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if c.A != 5 {
+		t.Errorf("A = %d, want 5 (round-trip WRM→RDM)", c.A)
+	}
+}
