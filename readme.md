@@ -109,10 +109,16 @@ Gruppo I/O e RAM — completo (16/16):
 ```text
 go-4004/
 ├── go.mod
-├── main.go
 ├── readme.md
+├── cmd/
+│   └── go4004/
+│       └── main.go         ← entry point / demo
 ├── docs/
-│   └── bcd.md              ← spiegazione codifica BCD
+│   ├── bcd.md              ← spiegazione codifica BCD
+│   ├── istruzioni-registro.md
+│   ├── istruzioni-accumulatore.md
+│   ├── istruzioni-salto.md
+│   └── istruzioni-io-ram.md
 └── cpu/
     ├── cpu.go              ← struct CPU, Step(), stack
     ├── opcodes.go          ← costanti opcode in 4 gruppi
@@ -213,7 +219,7 @@ rom.Data[0x008] = cpu.RDM()           // A = 7
 # Esecuzione
 
 ```bash
-go run .
+go run ./cmd/go4004
 go test ./...
 ```
 
