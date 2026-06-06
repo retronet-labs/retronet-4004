@@ -341,6 +341,17 @@ func (c *CPU4004) executeIO(op byte, ram *RAM) error {
 	case OP_WR3:
 		ram.Status[banco][reg][3] = nibble(c.A)
 
+	// RD0–RD3: legge il nibble di stato 0–3 del registro RAM corrente in A.
+	// Non modifica il carry.
+	case OP_RD0:
+		c.A = nibble(ram.Status[banco][reg][0])
+	case OP_RD1:
+		c.A = nibble(ram.Status[banco][reg][1])
+	case OP_RD2:
+		c.A = nibble(ram.Status[banco][reg][2])
+	case OP_RD3:
+		c.A = nibble(ram.Status[banco][reg][3])
+
 	default:
 		return fmt.Errorf("istruzione I/O non implementata: 0x%02X", op)
 	}

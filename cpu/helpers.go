@@ -44,3 +44,7 @@ func WR0() byte { return OP_WR0 }
 func WR1() byte { return OP_WR1 }
 func WR2() byte { return OP_WR2 }
 func WR3() byte { return OP_WR3 }
+func RD0() byte { return OP_RD0 }
+func RD1() byte { return OP_RD1 }
+func RD2() byte { return OP_RD2 }
+func RD3() byte { return OP_RD3 }

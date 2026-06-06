@@ -6,9 +6,14 @@ import (
 )
 
 func main() {
-	// Demo: WR0/WR3 — scrive nei nibble di stato della RAM.
+	// Demo: WR0 + RD0 — salva e rileggi un flag di stato dalla RAM.
 	//
-	//   Usa lo status per salvare due flag: segno (WR0) e overflow (WR3).
+	//   LDM 0 / DCL       → banco 0
+	//   FIM R0, 0x00 / SRC R0
+	//   LDM 0xC           → A = 12 (flag da salvare)
+	//   WR0               → status[0][0][0] = 12
+	//   LDM 0             → azzera A
+	//   RD0               → A = status[0][0][0] = 12
 
 	rom := cpu.NewROM(make([]byte, 4096))
 	ram := cpu.NewRAM()
@@ -18,13 +23,13 @@ func main() {
 	rom.Data[0x002] = cpu.FIM(cpu.R0)
 	rom.Data[0x003] = 0x00
 	rom.Data[0x004] = cpu.SRC(cpu.R0)
-	rom.Data[0x005] = cpu.LDM(1) // flag segno = 1 (negativo)
+	rom.Data[0x005] = cpu.LDM(0xC)
 	rom.Data[0x006] = cpu.WR0()
-	rom.Data[0x007] = cpu.LDM(0) // flag overflow = 0
-	rom.Data[0x008] = cpu.WR3()
+	rom.Data[0x007] = cpu.LDM(0)
+	rom.Data[0x008] = cpu.RD0()
 
 	c := cpu.NewCPU4004()
-	fmt.Println("=== Demo WR0 + WR3 ===")
+	fmt.Println("=== Demo WR0 + RD0 ===")
 
 	for i := 0; i < 9; i++ {
 		if err := c.Step(rom, ram); err != nil {
@@ -33,8 +38,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Status[0][0][0] = %d (segno, atteso 1)\n", ram.Status[0][0][0])
-	fmt.Printf("Status[0][0][3] = %d (overflow, atteso 0)\n", ram.Status[0][0][3])
+	fmt.Printf("A = %X (atteso C: round-trip WR0→RD0)\n", c.A)
 }
 
 func printCPU(c *cpu.CPU4004) {

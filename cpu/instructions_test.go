@@ -1471,3 +1471,111 @@ func TestWRDoesNotAffectCarry(t *testing.T) {
 		t.Error("C = false, want true (WR0 should not affect carry)")
 	}
 }
+
+// --- RD0/RD1/RD2/RD3 ---
+
+func TestRD0(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Status[0][0][0] = 7
+	c.SRCAddr = 0x00
+
+	rom.Data[0x000] = RD0()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 7 {
+		t.Errorf("A = %d, want 7", c.A)
+	}
+}
+
+func TestRD1(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Status[0][0][1] = 3
+	c.SRCAddr = 0x00
+
+	rom.Data[0x000] = RD1()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 3 {
+		t.Errorf("A = %d, want 3", c.A)
+	}
+}
+
+func TestRD2(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Status[0][0][2] = 9
+	c.SRCAddr = 0x00
+
+	rom.Data[0x000] = RD2()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 9 {
+		t.Errorf("A = %d, want 9", c.A)
+	}
+}
+
+func TestRD3(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Status[0][0][3] = 0xE
+	c.SRCAddr = 0x00
+
+	rom.Data[0x000] = RD3()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0xE {
+		t.Errorf("A = %X, want E", c.A)
+	}
+}
+
+func TestRDDoesNotAffectCarry(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	ram.Status[0][0][0] = 5
+	c.C = true
+	rom.Data[0x000] = RD0()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true (RD0 should not affect carry)")
+	}
+}
+
+func TestWR0RD0Roundtrip(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.SRCAddr = 0x00
+	c.A = 0xB
+
+	rom.Data[0x000] = WR0()
+	rom.Data[0x001] = LDM(0)
+	rom.Data[0x002] = RD0()
+
+	for i := 0; i < 3; i++ {
+		if err := c.Step(rom, ram); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if c.A != 0xB {
+		t.Errorf("A = %X, want B (round-trip WR0→RD0)", c.A)
+	}
+}
