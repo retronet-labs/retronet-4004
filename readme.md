@@ -23,7 +23,7 @@ Il progetto è sviluppato con focus su:
 
 # Stato attuale
 
-**33 / 46 istruzioni implementate**
+**39 / 46 istruzioni implementate**
 
 Gruppo registro — completo (8/8):
 
@@ -70,12 +70,16 @@ Gruppo salti e indirizzamento — completo (8/8):
 | JMS a      | 0x5r + byte | 2    | Salto a subroutine (push PC) |
 | ISZ Rr,a   | 0x7r + byte | 2    | Incrementa registro, salta se != 0 |
 
-Gruppo I/O e RAM — in corso (5/16):
+Gruppo I/O e RAM — in corso (9/16):
 
 | Istruzione | Opcode | Descrizione |
 |------------|--------|-------------|
 | WRM        | 0xE0   | Scrive A nella RAM data |
 | WMP        | 0xE1   | Scrive A sulla porta di output RAM |
+| WR0        | 0xE4   | Scrive A nel nibble di stato 0 |
+| WR1        | 0xE5   | Scrive A nel nibble di stato 1 |
+| WR2        | 0xE6   | Scrive A nel nibble di stato 2 |
+| WR3        | 0xE7   | Scrive A nel nibble di stato 3 |
 | SBM        | 0xE8   | A = A - RAM - borrow |
 | RDM        | 0xE9   | Legge RAM data in A |
 | ADM        | 0xEB   | A = A + RAM + carry |
@@ -233,7 +237,7 @@ un'istruzione alla volta, con test, demo in main e commit dedicato.
 | 4  | ✅ | PC a 12 bit |
 | 5  | ✅ | Stack hardware (JMS/BBL) |
 | 6  | ✅ | Istruzioni di salto (JUN, JMS, JCN, ISZ, FIM, SRC, FIN, JIN) |
-| 7  | 🔲 | RAM virtuale — istruzioni 0xEX (5/16 completate) |
+| 7  | 🔲 | RAM virtuale — istruzioni 0xEX (9/16 completate) |
 | 8  | 🔲 | I/O virtuale (tastiera, display) |
 | 9  | 🔲 | Programmi reali da ROM |
 | 10 | 🔲 | Mini calcolatrice BCD |
