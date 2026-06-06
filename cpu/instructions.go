@@ -281,7 +281,7 @@ func (c *CPU4004) Execute(op byte) error {
 //   banco     = CL & 0x3              (impostato da DCL)
 //   registro  = (SRCAddr >> 4) & 0x3  (nibble alto di SRCAddr)
 //   carattere = int(SRCAddr & 0x0F)   (nibble basso di SRCAddr)
-func (c *CPU4004) executeIO(op byte, ram *RAM) error {
+func (c *CPU4004) executeIO(op byte, rom *ROM, ram *RAM) error {
 	if ram == nil {
 		return fmt.Errorf("istruzione I/O 0x%02X: RAM non inizializzata", op)
 	}
@@ -340,6 +340,28 @@ func (c *CPU4004) executeIO(op byte, ram *RAM) error {
 		ram.Status[banco][reg][2] = nibble(c.A)
 	case OP_WR3:
 		ram.Status[banco][reg][3] = nibble(c.A)
+
+	// WRR: scrive A sulla porta di output del chip ROM (Intel 4001).
+	// Usata per pilotare le righe della tastiera a matrice o altri output collegati alla ROM.
+	// Non modifica A né il carry.
+	case OP_WRR:
+		if rom != nil {
+			rom.Port = nibble(c.A)
+		}
+
+	// WPM: scrive A in program memory (ROM).
+	// Sul 4004 reale serviva per programmare fisicamente i chip PROM 4001 in fabbrica.
+	// In un emulatore con ROM statica non ha effetto — implementata come no-op.
+	case OP_WPM:
+		// no-op: la ROM dell'emulatore non è modificabile a runtime
+
+	// RDR: legge la porta di input del chip ROM in A.
+	// Usata per leggere le colonne della tastiera dopo aver attivato una riga con WRR.
+	// Non modifica il carry.
+	case OP_RDR:
+		if rom != nil {
+			c.A = nibble(rom.Port)
+		}
 
 	// RD0–RD3: legge il nibble di stato 0–3 del registro RAM corrente in A.
 	// Non modifica il carry.

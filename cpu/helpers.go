@@ -48,3 +48,6 @@ func RD0() byte { return OP_RD0 }
 func RD1() byte { return OP_RD1 }
 func RD2() byte { return OP_RD2 }
 func RD3() byte { return OP_RD3 }
+func WRR() byte { return OP_WRR }
+func WPM() byte { return OP_WPM }
+func RDR() byte { return OP_RDR }

@@ -1567,6 +1567,7 @@ func TestWR0RD0Roundtrip(t *testing.T) {
 	c.A = 0xB
 
 	rom.Data[0x000] = WR0()
+
 	rom.Data[0x001] = LDM(0)
 	rom.Data[0x002] = RD0()
 
@@ -1577,5 +1578,116 @@ func TestWR0RD0Roundtrip(t *testing.T) {
 	}
 	if c.A != 0xB {
 		t.Errorf("A = %X, want B (round-trip WR0→RD0)", c.A)
+	}
+}
+
+// --- WRR ---
+
+func TestWRR(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.A = 0b0110
+	rom.Data[0x000] = WRR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if rom.Port != 0b0110 {
+		t.Errorf("rom.Port = %04b, want 0110", rom.Port)
+	}
+	if c.A != 0b0110 {
+		t.Errorf("A = %d, want 6 (WRR should not modify A)", c.A)
+	}
+}
+
+func TestWRRDoesNotAffectCarry(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.A = 3
+	c.C = true
+	rom.Data[0x000] = WRR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true (WRR should not affect carry)")
+	}
+}
+
+// --- RDR ---
+
+func TestRDR(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	rom.Port = 0b1001
+	c.A = 0
+	rom.Data[0x000] = RDR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 0b1001 {
+		t.Errorf("A = %04b, want 1001", c.A)
+	}
+}
+
+func TestRDRDoesNotAffectCarry(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	rom.Port = 0b0001
+	c.C = true
+	rom.Data[0x000] = RDR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if !c.C {
+		t.Error("C = false, want true (RDR should not affect carry)")
+	}
+}
+
+func TestWRRRDRRoundtrip(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.A = 0xA
+	rom.Data[0x000] = WRR()
+	rom.Data[0x001] = LDM(0)
+	rom.Data[0x002] = RDR()
+
+	for i := 0; i < 3; i++ {
+		if err := c.Step(rom, ram); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if c.A != 0xA {
+		t.Errorf("A = %X, want A (round-trip WRR→RDR)", c.A)
+	}
+}
+
+// --- WPM ---
+
+func TestWPMIsNoOp(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.A = 7
+	c.C = false
+	rom.Data[0x000] = WPM()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 7 {
+		t.Errorf("A = %d, want 7 (WPM should not modify A)", c.A)
+	}
+	if c.C {
+		t.Error("C = true, want false (WPM should not modify C)")
 	}
 }

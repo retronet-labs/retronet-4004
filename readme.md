@@ -23,7 +23,7 @@ Il progetto è sviluppato con focus su:
 
 # Stato attuale
 
-**43 / 46 istruzioni implementate**
+**46 / 46 istruzioni implementate — set completo** 🎉
 
 Gruppo registro — completo (8/8):
 
@@ -70,7 +70,7 @@ Gruppo salti e indirizzamento — completo (8/8):
 | JMS a      | 0x5r + byte | 2    | Salto a subroutine (push PC) |
 | ISZ Rr,a   | 0x7r + byte | 2    | Incrementa registro, salta se != 0 |
 
-Gruppo I/O e RAM — in corso (13/16):
+Gruppo I/O e RAM — completo (16/16):
 
 | Istruzione | Opcode | Descrizione |
 |------------|--------|-------------|
@@ -87,6 +87,9 @@ Gruppo I/O e RAM — in corso (13/16):
 | RD1        | 0xED   | A = nibble di stato 1 |
 | RD2        | 0xEE   | A = nibble di stato 2 |
 | RD3        | 0xEF   | A = nibble di stato 3 |
+| WRR        | 0xE2   | Scrive A sulla porta output ROM |
+| RDR        | 0xEA   | A = porta input ROM (tastiera) |
+| WPM        | 0xE3   | Write program memory (no-op) |
 
 ---
 
@@ -241,7 +244,7 @@ un'istruzione alla volta, con test, demo in main e commit dedicato.
 | 4  | ✅ | PC a 12 bit |
 | 5  | ✅ | Stack hardware (JMS/BBL) |
 | 6  | ✅ | Istruzioni di salto (JUN, JMS, JCN, ISZ, FIM, SRC, FIN, JIN) |
-| 7  | 🔲 | RAM virtuale — istruzioni 0xEX (13/16 completate) |
+| 7  | ✅ | RAM virtuale — tutte le 46 istruzioni implementate |
 | 8  | 🔲 | I/O virtuale (tastiera, display) |
 | 9  | 🔲 | Programmi reali da ROM |
 | 10 | 🔲 | Mini calcolatrice BCD |

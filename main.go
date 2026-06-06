@@ -6,39 +6,40 @@ import (
 )
 
 func main() {
-	// Demo: WR0 + RD0 — salva e rileggi un flag di stato dalla RAM.
+	// Demo: WRR + RDR — simula un ciclo di scansione tastiera.
 	//
-	//   LDM 0 / DCL       → banco 0
-	//   FIM R0, 0x00 / SRC R0
-	//   LDM 0xC           → A = 12 (flag da salvare)
-	//   WR0               → status[0][0][0] = 12
-	//   LDM 0             → azzera A
-	//   RD0               → A = status[0][0][0] = 12
+	// Il firmware attiva una riga della tastiera (WRR), poi legge
+	// le colonne attive (RDR) e decodifica il tasto premuto (KBP).
+	//
+	//   LDM 0b0001 → A = 1 (riga 1)
+	//   WRR        → rom.Port = 1 (attiva riga 1)
+	//   RDR        → A = rom.Port (leggi colonne)
+	//   KBP        → A = numero tasto (decodifica one-hot)
+	//
+	// Simuliamo il tasto nella colonna 3 premuto (bit 2 attivo = 0b0100).
 
 	rom := cpu.NewROM(make([]byte, 4096))
 	ram := cpu.NewRAM()
 
-	rom.Data[0x000] = cpu.LDM(0)
-	rom.Data[0x001] = cpu.DCL()
-	rom.Data[0x002] = cpu.FIM(cpu.R0)
-	rom.Data[0x003] = 0x00
-	rom.Data[0x004] = cpu.SRC(cpu.R0)
-	rom.Data[0x005] = cpu.LDM(0xC)
-	rom.Data[0x006] = cpu.WR0()
-	rom.Data[0x007] = cpu.LDM(0)
-	rom.Data[0x008] = cpu.RD0()
+	rom.Data[0x000] = cpu.LDM(0b0001) // attiva riga 1
+	rom.Data[0x001] = cpu.WRR()        // invia sulla porta ROM
+	rom.Data[0x002] = cpu.RDR()        // leggi risposta colonne
+	rom.Data[0x003] = cpu.KBP()        // decodifica one-hot → numero tasto
+
+	// Simuliamo il tasto in colonna 3 premuto
+	rom.Port = 0b0100
 
 	c := cpu.NewCPU4004()
-	fmt.Println("=== Demo WR0 + RD0 ===")
+	fmt.Println("=== Demo WRR + RDR (scansione tastiera) ===")
 
-	for i := 0; i < 9; i++ {
+	for i := 0; i < 4; i++ {
 		if err := c.Step(rom, ram); err != nil {
 			fmt.Printf("Errore: %v\n", err)
 			break
 		}
 	}
 
-	fmt.Printf("A = %X (atteso C: round-trip WR0→RD0)\n", c.A)
+	fmt.Printf("A = %d (atteso 3: tasto colonna 3 premuto)\n", c.A)
 }
 
 func printCPU(c *cpu.CPU4004) {

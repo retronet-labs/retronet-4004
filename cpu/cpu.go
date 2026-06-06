@@ -98,8 +98,8 @@ func (c *CPU4004) Step(rom *ROM, ram *RAM) error {
 			return nil
 		}
 		return c.Execute(op) // JIN: 1 byte, gestito in Execute
-	case 0xE0: // gruppo I/O e RAM (0xEX) — richiede accesso alla RAM virtuale
-		return c.executeIO(op, ram)
+	case 0xE0: // gruppo I/O e RAM (0xEX) — richiede accesso alla RAM e alla ROM virtuale
+		return c.executeIO(op, rom, ram)
 	default:
 		return c.Execute(op)
 	}
