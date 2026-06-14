@@ -63,9 +63,27 @@ FB      DAA            → correzione BCD: A=7, C=1
 40 05   JUN 0x005      → salto su se stesso (HALT)
 ```
 
-Per ora le ROM si producono a mano (byte) o dai programmi Go in `examples/`.
-La generazione da sorgente testuale (`LDM 8` ecc.) sarà compito di un modulo
-dedicato, `retronet-asm`.
+Le ROM in `testdata/` sono generate dai programmi Go in `examples/` tramite gli
+helper del package `cpu` (così i byte sono sempre corretti), con un halt finale
+aggiunto per fermare la CLI:
+
+```bash
+go run ./testdata/gen   # rigenera testdata/*.rom
+```
+
+ROM disponibili:
+
+| File | Programma | Risultato |
+|------|-----------|-----------|
+| `testdata/bcd-add.rom`          | 8 + 9 in BCD            | A=7, C=1 → 17 |
+| `testdata/moltiplicazione.rom`  | 3 × 4 (loop ISZ)        | RAM[0][0][0]=12 |
+| `testdata/subroutine.rom`       | 3 + 5 (JMS/BBL)         | RAM[0][0][0]=8 |
+| `testdata/ram-array.rom`        | array 1,2,3,4 in RAM    | RAM[0][0][0..3]=1,2,3,4 |
+| `testdata/somma-bcd.rom`        | 7 + 5 BCD cifra singola | cifra 2 + riporto |
+| `testdata/somma-multicifra.rom` | 47 + 58                 | RAM reg2 = 5,0,1 → 105 |
+
+La generazione da sorgente testuale (`LDM 8` ecc.) sarà invece compito di un
+modulo dedicato, `retronet-asm`.
 
 ### Convenzione di arresto (HALT)
 
@@ -92,6 +110,24 @@ RAM (celle dati non-zero):
 ```
 
 Il risultato BCD si legge come cifra alta = carry (1) e cifra bassa = A (7) → **17**.
+
+---
+
+# Docker
+
+Il modulo si esegue anche in container (build multi-stage, immagine finale Alpine):
+
+```bash
+docker build -t retronet/4004 .
+
+# default: esegue la demo BCD col trace
+docker run --rm retronet/4004
+
+# override degli argomenti (i flag vanno prima della ROM)
+docker run --rm retronet/4004 -dump-ram testdata/somma-multicifra.rom
+```
+
+L'immagine include il binario e le ROM di `testdata/`.
 
 ---
 
