@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestReadDigit(t *testing.T) {
-	// Cifre intervallate da caratteri non-cifra (spazi, a-capo, lettere).
-	r := bufio.NewReader(strings.NewReader("7 5\nx9"))
-	want := []uint8{7, 5, 9}
+func TestReadKey(t *testing.T) {
+	// Cifre e operatori, intervallati da caratteri da saltare (spazi, a-capo).
+	r := bufio.NewReader(strings.NewReader("7 +\n5 - * / = 9"))
+	want := []uint8{7, 10, 5, 11, 12, 13, 14, 9} // 7 + 5 - * / = 9
 	for i, w := range want {
-		got, ok := readDigit(r)
+		got, ok := readKey(r)
 		if !ok {
 			t.Fatalf("lettura %d: ok=false inatteso", i)
 		}
@@ -19,7 +19,7 @@ func TestReadDigit(t *testing.T) {
 			t.Errorf("lettura %d = %d, atteso %d", i, got, w)
 		}
 	}
-	if _, ok := readDigit(r); ok {
+	if _, ok := readKey(r); ok {
 		t.Error("a fine input atteso ok=false")
 	}
 }

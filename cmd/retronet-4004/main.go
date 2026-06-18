@@ -73,12 +73,12 @@ func main() {
 	if *ioMode {
 		reader := bufio.NewReader(os.Stdin)
 		c.KeyboardFunc = func() uint8 {
-			d, ok := readDigit(reader)
+			k, ok := readKey(reader)
 			if !ok {
 				fmt.Fprintln(os.Stderr, "\n(input terminato)")
 				os.Exit(0)
 			}
-			return d
+			return k
 		}
 		c.DisplayFunc = func(n uint8) { fmt.Printf("%d", n) }
 	}
@@ -111,16 +111,33 @@ func main() {
 	}
 }
 
-// readDigit legge la prossima cifra '0'-'9' da r e la restituisce come nibble,
-// saltando gli altri caratteri (spazi, a-capo, ecc.). ok=false a fine input.
-func readDigit(r *bufio.Reader) (uint8, bool) {
+// readKey legge la prossima "pressione di tasto" da r e la restituisce come
+// nibble, secondo la mappa del tastierino:
+//
+//	'0'..'9' → 0..9      + → 10   - → 11   * → 12   / → 13   = → 14
+//
+// Gli altri caratteri (spazi, a-capo) vengono saltati. ok=false a fine input.
+// La mappa è la convenzione minimale del ponte -io; gestioni più ricche (ANSI,
+// tasti speciali) appartengono a un eventuale modulo terminale.
+func readKey(r *bufio.Reader) (uint8, bool) {
 	for {
 		ch, _, err := r.ReadRune()
 		if err != nil {
 			return 0, false
 		}
-		if ch >= '0' && ch <= '9' {
+		switch {
+		case ch >= '0' && ch <= '9':
 			return uint8(ch - '0'), true
+		case ch == '+':
+			return 10, true
+		case ch == '-':
+			return 11, true
+		case ch == '*':
+			return 12, true
+		case ch == '/':
+			return 13, true
+		case ch == '=':
+			return 14, true
 		}
 	}
 }
