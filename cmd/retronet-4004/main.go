@@ -1,5 +1,5 @@
 // Comando retronet-4004: carica una ROM da file ed esegue il programma
-// sull'emulatore Intel 4004, con trace e dump opzionali dello stato.
+// sull'emulatore Intel 4004, con trace, dump e I/O interattivo opzionali.
 //
 // Uso:
 //
@@ -10,12 +10,15 @@
 //	-trace       stampa ogni istruzione eseguita (trace mode)
 //	-max N       limite di step di sicurezza (default 100000)
 //	-dump-ram    a fine esecuzione stampa le celle RAM non-zero
+//	-io          modalità interattiva: collega stdin alla tastiera (RDR) e
+//	             stdout al display (WMP)
 //
 // Il programma si ferma quando il PC raggiunge un JUN che salta su se stesso
 // (la convenzione "halt" usata dagli esempi) oppure al raggiungimento di -max.
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -27,6 +30,7 @@ func main() {
 	trace := flag.Bool("trace", false, "stampa ogni istruzione eseguita (trace mode)")
 	maxSteps := flag.Int("max", 100000, "limite di step di sicurezza (anti loop infinito)")
 	dumpRAM := flag.Bool("dump-ram", false, "a fine esecuzione stampa le celle RAM non-zero")
+	ioMode := flag.Bool("io", false, "I/O interattivo: stdin → tastiera (RDR), stdout → display (WMP)")
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "uso: retronet-4004 [flags] <file.rom>")
 		flag.PrintDefaults()
@@ -63,6 +67,22 @@ func main() {
 	c := cpu.NewCPU4004()
 	c.Trace = *trace
 
+	// Modalità interattiva: ponte stdio minimale verso i callback di I/O.
+	// Volutamente "stupido" (una cifra in, un nibble out): ANSI, formattazione e
+	// trasporti appartengono a un eventuale modulo terminale, non qui.
+	if *ioMode {
+		reader := bufio.NewReader(os.Stdin)
+		c.KeyboardFunc = func() uint8 {
+			d, ok := readDigit(reader)
+			if !ok {
+				fmt.Fprintln(os.Stderr, "\n(input terminato)")
+				os.Exit(0)
+			}
+			return d
+		}
+		c.DisplayFunc = func(n uint8) { fmt.Printf("%d", n) }
+	}
+
 	fmt.Printf("=== retronet-4004 — ROM: %s (%d byte) ===\n", path, len(code))
 	if *trace {
 		fmt.Println()
@@ -88,6 +108,20 @@ func main() {
 	printState(c, steps)
 	if *dumpRAM {
 		dumpRam(ram)
+	}
+}
+
+// readDigit legge la prossima cifra '0'-'9' da r e la restituisce come nibble,
+// saltando gli altri caratteri (spazi, a-capo, ecc.). ok=false a fine input.
+func readDigit(r *bufio.Reader) (uint8, bool) {
+	for {
+		ch, _, err := r.ReadRune()
+		if err != nil {
+			return 0, false
+		}
+		if ch >= '0' && ch <= '9' {
+			return uint8(ch - '0'), true
+		}
 	}
 }
 
