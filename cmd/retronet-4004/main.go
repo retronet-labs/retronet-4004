@@ -80,7 +80,15 @@ func main() {
 			}
 			return k
 		}
-		c.DisplayFunc = func(n uint8) { fmt.Printf("%d", n) }
+		// Nibble 0-9 = cifra; 15 = punto decimale (usato dalla calcolatrice
+		// per i risultati con la virgola). Gli altri valori restano numerici.
+		c.DisplayFunc = func(n uint8) {
+			if n == 15 {
+				fmt.Print(".")
+			} else {
+				fmt.Printf("%d", n)
+			}
+		}
 	}
 
 	fmt.Printf("=== retronet-4004 — ROM: %s (%d byte) ===\n", path, len(code))
