@@ -80,12 +80,15 @@ func main() {
 			}
 			return k
 		}
-		// Nibble 0-9 = cifra; 15 = punto decimale (usato dalla calcolatrice
-		// per i risultati con la virgola). Gli altri valori restano numerici.
+		// Nibble 0-9 = cifra; 11 = segno meno, 15 = punto decimale (usati dalla
+		// calcolatrice per risultati negativi/con virgola). Gli altri restano numerici.
 		c.DisplayFunc = func(n uint8) {
-			if n == 15 {
+			switch n {
+			case 11:
+				fmt.Print("-")
+			case 15:
 				fmt.Print(".")
-			} else {
+			default:
 				fmt.Printf("%d", n)
 			}
 		}
