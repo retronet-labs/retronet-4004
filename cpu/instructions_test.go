@@ -1811,3 +1811,63 @@ func TestTraceIOInstructionShowsCLAndSRC(t *testing.T) {
 		t.Errorf("trace I/O non contiene 'SRC=13':\n%s", out)
 	}
 }
+
+// --- I/O virtuale (Step 14) ---
+
+func TestWMPCallsDisplayFunc(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	var got uint8
+	called := false
+	c.DisplayFunc = func(n uint8) { got, called = n, true }
+	c.SRCAddr = 0x00
+	c.A = 7
+
+	rom.Data[0x000] = WMP()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if !called {
+		t.Fatal("DisplayFunc non è stata chiamata")
+	}
+	if got != 7 {
+		t.Errorf("DisplayFunc ha ricevuto %d, atteso 7", got)
+	}
+	if ram.Port[0] != 7 {
+		t.Errorf("ram.Port[0] = %d, atteso 7 (la scrittura sulla porta resta)", ram.Port[0])
+	}
+}
+
+func TestRDRCallsKeyboardFunc(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	c.KeyboardFunc = func() uint8 { return 9 }
+
+	rom.Data[0x000] = RDR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 9 {
+		t.Errorf("A = %d, atteso 9 (fornito da KeyboardFunc)", c.A)
+	}
+}
+
+func TestRDRFallbackToPortWhenNoKeyboardFunc(t *testing.T) {
+	c := NewCPU4004()
+	rom := NewROM(make([]byte, 256))
+	ram := NewRAM()
+
+	rom.Port = 5 // porta ROM statica; nessuna KeyboardFunc
+
+	rom.Data[0x000] = RDR()
+	if err := c.Step(rom, ram); err != nil {
+		t.Fatal(err)
+	}
+	if c.A != 5 {
+		t.Errorf("A = %d, atteso 5 (fallback alla porta ROM statica)", c.A)
+	}
+}

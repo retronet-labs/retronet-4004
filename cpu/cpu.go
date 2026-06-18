@@ -44,6 +44,14 @@ type CPU4004 struct {
 	// TraceWriter è la destinazione dell'output; se nil viene usato os.Stdout.
 	Trace       bool
 	TraceWriter io.Writer
+
+	// I/O virtuale (Step 14): callback opzionali per tastiera e display.
+	// Se non nil affiancano/sostituiscono le porte statiche:
+	//   DisplayFunc  riceve il nibble scritto da WMP (output verso il display)
+	//   KeyboardFunc fornisce il nibble letto da RDR (input dalla tastiera)
+	// Con entrambi nil l'emulatore mantiene il comportamento precedente.
+	DisplayFunc  func(nibble uint8)
+	KeyboardFunc func() uint8
 }
 
 // NewCPU4004 crea una nuova istanza del CPU4004 con valori iniziali

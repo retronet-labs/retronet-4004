@@ -313,6 +313,10 @@ func (c *CPU4004) executeIO(op byte, rom *ROM, ram *RAM) error {
 	case OP_WMP:
 		ram.Port[banco] = nibble(c.A)
 
+		if c.DisplayFunc != nil {
+			c.DisplayFunc(nibble(c.A))
+		}
+
 	// WR0–WR3: scrive A nel nibble di stato 0–3 del registro RAM corrente.
 	// L'area status è separata dai dati ed è usata dal firmware per metadati.
 	// Gli opcode 0xE4-0xE7 sono sequenziali: op&0x03 dà direttamente l'indice 0-3.
@@ -332,13 +336,15 @@ func (c *CPU4004) executeIO(op byte, rom *ROM, ram *RAM) error {
 	// Sul 4004 reale serviva per programmare fisicamente i chip PROM 4001 in fabbrica.
 	// In un emulatore con ROM statica non ha effetto — implementata come no-op.
 	case OP_WPM:
-		// no-op: la ROM dell'emulatore non è modificabile a runtime
+	// no-op: la ROM dell'emulatore non è modificabile a runtime
 
 	// RDR: legge la porta di input del chip ROM in A.
 	// Usata per leggere le colonne della tastiera dopo aver attivato una riga con WRR.
 	// Non modifica il carry.
 	case OP_RDR:
-		if rom != nil {
+		if c.KeyboardFunc != nil {
+			c.A = nibble(c.KeyboardFunc())
+		} else if rom != nil {
 			c.A = nibble(rom.Port)
 		}
 
