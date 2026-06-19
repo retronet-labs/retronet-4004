@@ -149,6 +149,8 @@ func readKey(r *bufio.Reader) (uint8, bool) {
 			return 13, true
 		case ch == '=':
 			return 14, true
+		case ch == '.':
+			return 15, true
 		}
 	}
 }
