@@ -5,3 +5,5 @@ retronet-4004.exe
 # Workspace di sviluppo locale multi-repo (delega ALU a retronet-hardware/logic).
 go.work
 go.work.sum
+# Manuali/PDF di riferimento (spesso protetti da copyright): non versionare.
+*.pdf
