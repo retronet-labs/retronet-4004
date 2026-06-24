@@ -56,7 +56,7 @@ func (c *CPU4004) executeWithArg(op, arg byte) error {
 	// ISZ Rr,a: incrementa il registro Rr; se il risultato e' diverso da 0,
 	// salta a 'a' usando la stessa pagina post-fetch di JCN.
 	case OP_ISZ:
-		c.R[high] = nibble(c.R[high] + 1)
+		c.R[high], _ = i4004.Inc(c.R[high])
 		if c.R[high] != 0 {
 			c.PC = (c.PC & 0x0F00) | uint16(arg)
 		}
@@ -103,7 +103,7 @@ func (c *CPU4004) Execute(op byte) error {
 		// INC R0-R15: incrementa il valore del registro specificato (R0-R15) di 1
 		// Ad esempio, se R0 = 0x0F (15), dopo INC R0, R0 sarà 0x00 (0) e non ci sarà carry, poiché i registri sono a 4 bit
 		// Incrementa il registro specificato e assicura che rimanga a 4 bit
-		c.R[low] = nibble(c.R[low] + 1)
+		c.R[low], _ = i4004.Inc(c.R[low])
 
 	case op&0xF0 == OP_ADD:
 		// ADD R0-R15: aggiunge il valore del registro specificato (R0-R15) all'accumulatore (A) e al carry
@@ -195,7 +195,7 @@ func (c *CPU4004) Execute(op byte) error {
 	// Se A = 0x0A (10) e C = false, dopo DAA, A sarà 0x00 (0) e C sarà true (correzione necessaria perché 10 non è un singolo digit BCD)
 	case op == OP_DAA:
 		if c.C || c.A > 9 {
-			c.A = nibble(c.A + 6)
+			c.A, _ = i4004.Add(c.A, 6, false)
 			c.C = true
 		}
 
