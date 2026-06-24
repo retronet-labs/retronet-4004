@@ -1,6 +1,10 @@
 package cpu
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/retronet-labs/retronet-hardware/bridge/i4004"
+)
 
 // executeWithArg esegue le istruzioni a 2 byte del 4004.
 // op è il primo byte (opcode + nibble), arg è il secondo byte già letto dalla ROM.
@@ -105,35 +109,26 @@ func (c *CPU4004) Execute(op byte) error {
 		// ADD R0-R15: aggiunge il valore del registro specificato (R0-R15) all'accumulatore (A) e al carry
 		// Ad esempio, se A = 0x03, R0 = 0x02 e C = false, dopo ADD R0, A sarà 0x05 e C sarà false
 		// Se A = 0x0F, R0 = 0x01 e C = true, dopo ADD R0, A sarà 0x01 (0 + 1 + 1) e C sarà true (carry)
-		result := c.A + c.R[low] + c.carryIn()
-		c.A = nibble(result)
-
-		// Il carry è true se il risultato dell'addizione supera 0x0F (15), altrimenti è false
-		c.C = result > 0x0F
+		// Delega alla ALU a porte di RetroNet Logic tramite il bridge i4004.
+		c.A, c.C = i4004.Add(c.A, c.R[low], c.C)
 
 	// SUB R0-R15: A = A + ~Rr + CY. Sul 4004 CY=1 significa nessun borrow
 	// precedente; dopo l'operazione CY=1 significa nessun borrow generato.
 	case op&0xF0 == OP_SUB:
-		sum := c.A + nibble(^c.R[low]) + c.carryIn()
-		c.A = nibble(sum)
-		c.C = sum > 0x0F
+		c.A, c.C = i4004.Sub(c.A, c.R[low], c.C)
 
 	// IAC: Increment Accumulator, incrementa l'accumulatore (A) di 1 considerando il carry
 	case op == OP_IAC:
-		result := c.A + 1
-		c.A = nibble(result)
-		c.C = result > 0x0F
+		c.A, c.C = i4004.Inc(c.A)
 
 	// DAC: Decrement Accumulator, decrementa A di 1.
 	// Un borrow imposta CY=0; nessun borrow imposta CY=1.
 	case op == OP_DAC:
-		result := c.A + 0x0F
-		c.A = nibble(result)
-		c.C = result > 0x0F
+		c.A, c.C = i4004.Dec(c.A)
 
 	// CMA: Complement Accumulator, inverte tutti i bit dell'accumulatore (A)
 	case op == OP_CMA:
-		c.A = nibble(^c.A)
+		c.A = i4004.Complement(c.A)
 
 	// CLB: Clear Accumulator and Borrow, azzera l'accumulatore (A) e il carry (C)
 	case op == OP_CLB:

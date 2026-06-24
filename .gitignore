@@ -1,3 +1,7 @@
 tmp
 retronet-4004
 retronet-4004.exe
+
+# Workspace di sviluppo locale multi-repo (delega ALU a retronet-hardware/logic).
+go.work
+go.work.sum
