@@ -14,7 +14,7 @@ package main
 
 import (
 	"fmt"
-	"go-4004/cpu"
+	"github.com/retronet-labs/retronet-4004/cpu"
 )
 
 func main() {

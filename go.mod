@@ -1,4 +1,4 @@
-module go-4004
+module github.com/retronet-labs/retronet-4004
 
 go 1.26.2
 

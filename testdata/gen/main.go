@@ -15,7 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"go-4004/cpu"
+	"github.com/retronet-labs/retronet-4004/cpu"
 )
 
 func main() {
