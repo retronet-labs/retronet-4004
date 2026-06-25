@@ -27,20 +27,20 @@ func main() {
 			cpu.FIM(cpu.R2), 0x00, // indirizzo RAM 0x00
 			cpu.SRC(cpu.R2),
 			cpu.LDM(12), cpu.XCH(cpu.R4), // R4 = 12 (contatore 16-4)
-			cpu.ADD(cpu.R1),         // LOOP @ 0x09
-			cpu.ISZ(cpu.R4), 0x09,   // R4++; se !=0 → 0x09
-			cpu.WRM(),               // RAM[0][0][0] = 12
-			cpu.JUN(0x0), 0x0D,      // halt @ 0x00D
+			cpu.ADD(cpu.R1),       // LOOP @ 0x09
+			cpu.ISZ(cpu.R4), 0x09, // R4++; se !=0 → 0x09
+			cpu.WRM(),          // RAM[0][0][0] = 12
+			cpu.JUN(0x0), 0x0D, // halt @ 0x00D
 		},
 
 		// 3 + 5 = 8 chiamando una subroutine (JMS/BBL). Halt @ 0x00B.
 		"subroutine.rom": {
 			cpu.LDM(0), cpu.DCL(),
 			cpu.FIM(cpu.R2), 0x00, cpu.SRC(cpu.R2),
-			cpu.FIM(cpu.R0), 0x35,    // R0=3, R1=5
-			cpu.JMS(0x0), 0x0D,       // chiama SOMMA @ 0x00D
+			cpu.FIM(cpu.R0), 0x35, // R0=3, R1=5
+			cpu.JMS(0x0), 0x0D, // chiama SOMMA @ 0x00D
 			cpu.LD(cpu.R5), cpu.WRM(), // recupera risultato, scrivi in RAM
-			cpu.JUN(0x0), 0x0B,       // halt @ 0x00B
+			cpu.JUN(0x0), 0x0B, // halt @ 0x00B
 			cpu.LD(cpu.R0), cpu.ADD(cpu.R1), cpu.XCH(cpu.R5), cpu.BBL(0), // SOMMA @ 0x00D
 		},
 
@@ -53,7 +53,7 @@ func main() {
 			cpu.SRC(cpu.R2), cpu.LD(cpu.R1), cpu.WRM(), // LOOP @ 0x08
 			cpu.INC(cpu.R1), cpu.INC(cpu.R3),
 			cpu.ISZ(cpu.R4), 0x08, // ripeti
-			cpu.JUN(0x0), 0x0F,    // halt @ 0x00F
+			cpu.JUN(0x0), 0x0F, // halt @ 0x00F
 		},
 
 		// Calcolatrice BCD a cifra singola: 7 + 5. Halt @ 0x01B.
@@ -79,7 +79,7 @@ func main() {
 			cpu.SRC(cpu.R4), cpu.WRM(), cpu.INC(cpu.R1), cpu.INC(cpu.R3), cpu.INC(cpu.R5),
 			cpu.ISZ(cpu.R6), 0x1F,
 			cpu.TCC(), cpu.SRC(cpu.R4), cpu.WRM(), // riporto finale → centinaia
-			cpu.JUN(0x0), 0x2E,                    // halt @ 0x02E
+			cpu.JUN(0x0), 0x2E, // halt @ 0x02E
 		},
 	}
 
