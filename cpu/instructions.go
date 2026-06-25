@@ -151,25 +151,13 @@ func (c *CPU4004) Execute(op byte) error {
 	// Ad esempio, se A = 0b1011 (11) e C = false, dopo RAL, A sarà 0b0110 (6) e C sarà true (il bit più significativo 1 è stato spostato nel carry)
 	// Se A = 0b1011 (11) e C = true, dopo RAL, A sarà 0b0111 (7) e C sarà true (il bit più significativo 1 è stato spostato nel carry e il vecchio carry true è stato spostato in A)
 	case op == OP_RAL:
-		newCarry := c.A&0x08 != 0
-		oldCarry := uint8(0)
-		if c.C {
-			oldCarry = 1
-		}
-		// La rotazione a sinistra sposta i bit di A a sinistra e inserisce il vecchio carry nel bit meno significativo
-		c.A = nibble(c.A<<1) | oldCarry
-		c.C = newCarry
+		// Delega allo shifter a gate (rotazione a sinistra attraverso il carry).
+		c.A, c.C = i4004.RotateLeftThroughCarry(c.A, c.C)
 
 	// RAR: Rotate Accumulator Right, ruota i bit dell'accumulatore (A) a destra e sposta bit meno significativo (bit 0) nel carry (C)
 	case op == OP_RAR:
-		newCarry := c.A&0x01 != 0
-		oldCarry := uint8(0)
-		if c.C {
-			oldCarry = 1
-		}
-		// La rotazione a destra sposta i bit di A a destra e inserisce il vecchio carry nel bit più significativo
-		c.A = (c.A >> 1) | (oldCarry << 3)
-		c.C = newCarry
+		// Delega allo shifter a gate (rotazione a destra attraverso il carry).
+		c.A, c.C = i4004.RotateRightThroughCarry(c.A, c.C)
 
 	// TCC: Transfer Carry to Accumulator and Clear, carica 1 in A se il carry (C) è true, altrimenti carica 0 in A, e azzera il carry (C)
 	case op == OP_TCC:
